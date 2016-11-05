@@ -1,0 +1,8 @@
+define my_drawing as
+  circle;
+  stretched: {multiplier: 2};
+  shifted: {right: 20, left: 10}.
+
+define result as
+  canvas: {w: 400, h: 200};
+  with: {element: my_drawing}.
