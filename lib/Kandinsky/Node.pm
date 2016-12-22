@@ -13,7 +13,7 @@ class Definition {
   has Value $.value;
 
   method to-code {
-    "var {$.name} = {$.value.to-code};";
+    "var kan_{$.name} = {$.value.to-code};";
   }
 }
 
@@ -65,12 +65,10 @@ class Function does Value {
   has Str $.name;
 
   method to-code {
-    '$compose(' ~ 
-    q:to:c/END/;
-      {$.subject ?? $.subject.to-code !! "null"},
-      {$.name},
-      {$.parameters.to-code}
-    )
-    END
+    'compose(' ~
+      ($.subject ?? $.subject.to-code !! "null") ~ ', ' ~
+      "kan_$.name" ~ ', ' ~
+      $.parameters.to-code ~ ', ' ~
+    ')';
   }
 }

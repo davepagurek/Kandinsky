@@ -1,6 +1,13 @@
 define my_drawing as
   circle: {radius: 50};
-  stretched: {multiplier: 2};
+  stretched: {by: 2};
   shifted: {right: 200, down: 100}.
 
-define result as my_drawing.
+define result as
+  my_drawing;
+  with: {
+    drawing:
+      my_drawing;
+      stretched: {by: 0.25};
+      shifted: {right: 400, down: 400}
+  }.
