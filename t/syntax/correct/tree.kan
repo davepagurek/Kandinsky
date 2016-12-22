@@ -2,18 +2,21 @@ define branch as
   rectangle: {x: -4, y: -50, width: 8, height: 54}.
 
 define tree as
-  given: {
-    that: lt: {lhs: random, rhs: 0.8},
-    then:
-      branch;
-      with: {drawing:
-        tree;
-        stretched: {x: 0.8, y: 0.75};
-        rotated: {angle: random: {from: -90, to: 90}};
-        shifted: {up: 50}
-      },
-    else: branch
-  }.
+  grouped: {drawings: repeated: {
+    times: 2,
+    each: given: {
+      that: lt: {lhs: random, rhs: 0.5},
+      then:
+        branch;
+        with: {drawing:
+          tree;
+          stretched: {x: 0.8, y: 0.75};
+          rotated: {angle: random: {from: -90, to: 90}};
+          shifted: {up: 50}
+        },
+      else: branch
+    }
+  }}.
 
 define result as tree;
   shifted: {down: 400, right: 400}.

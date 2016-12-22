@@ -63,6 +63,10 @@ class Kandinsky::Actions {
     make $<value>.map(*.made);
   }
 
+  method value:sym<nothing>($/) {
+    make Kandinsky::Node::Nothing.new;
+  }
+
   method value:sym<number>($/) {
     make $<number>.made;
   }

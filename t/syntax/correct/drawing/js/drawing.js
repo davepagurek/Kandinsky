@@ -99,17 +99,29 @@ context.rectangle = function(subject, params) {
     width: get(params, 'width', 10),
     height: get(params, 'height', 10)
   }, []);
-}
+};
 
 
 // GROUPS
 
+context.grouped = function(subject, params) {
+  return new tag(
+    'g', {},
+    get(params, 'drawings').map(function(drawing) {
+      if (isFunction(drawing)) {
+        return drawing();
+      } else {
+        return drawing;
+      }
+    }).concat([subject]).filter(function(drawing) {
+      return drawing;
+    })
+  );
+};
+
 context.with = function(subject, params) {
-  return new tag('g', {}, [
-    subject,
-    get(params, 'drawing')
-  ]);
-}
+  return context.grouped(null, {drawings: [subject, get(params, 'drawing')]});
+};
 
 // TRANSFORMS
 
@@ -148,8 +160,6 @@ context.rotated = function(subject, params) {
 // LOGIC
 
 context.identity = function(subject) {
-  console.log("Returning self");
-  console.log(subject);
   return subject;
 };
 
@@ -176,10 +186,17 @@ context.random = function(_, params) {
   return Math.random() * (high - low) + low;
 };
 
+context.repeated = function(_, params) {
+  var times = get(params, 'times', 1);
+  return Array.apply(null, Array(times)).map(function() {
+    return get(params, 'each');
+  });
+};
+
 
 
 context.branch = compose(null, "rectangle", {"x": -4, "height": 54, "y": -50, "width": 8});
 
-context.tree = compose(null, "given", {"then": compose(compose(null, "branch", {}), "with", {"drawing": compose(compose(compose(compose(null, "tree", {}), "stretched", {"x": 0.8, "y": 0.75}), "rotated", {"angle": compose(null, "random", {"to": 90, "from": -90})}), "shifted", {"up": 50})}), "that": compose(null, "lt", {"lhs": compose(null, "random", {}), "rhs": 0.8}), "else": compose(null, "branch", {})});
+context.tree = compose(null, "grouped", {"drawings": compose(null, "repeated", {"each": compose(null, "given", {"then": compose(compose(null, "branch", {}), "with", {"drawing": compose(compose(compose(compose(null, "tree", {}), "stretched", {"x": 0.8, "y": 0.75}), "rotated", {"angle": compose(null, "random", {"to": 90, "from": -90})}), "shifted", {"up": 50})}), "that": compose(null, "lt", {"lhs": compose(null, "random", {}), "rhs": 0.5}), "else": compose(null, "branch", {})}), "times": 2})});
 
 context.result = compose(compose(null, "tree", {}), "shifted", {"down": 400, "right": 400});

@@ -72,3 +72,9 @@ class Function does Value {
     ')';
   }
 }
+
+class Nothing does Value {
+  method to-code {
+    "null";
+  }
+}

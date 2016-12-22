@@ -1,5 +1,7 @@
 use v6;
 
+my @reserved = "define", "nothing", "as";
+
 grammar Kandinsky::Grammar {
   rule TOP {
     <.ws>
@@ -47,6 +49,7 @@ grammar Kandinsky::Grammar {
   }
   rule value:sym<dict> { <dict> }
   rule value:sym<array> { <array> }
+  rule value:sym<nothing> { "nothing" }
 
   token number {
     '-'? \d+ \.? \d*
@@ -79,6 +82,6 @@ grammar Kandinsky::Grammar {
   }
 
   token identifier {
-    <:Letter> \w*
+    <:Letter> \w* <?{~$/ ne @reserved.any}>
   }
 }
