@@ -13,7 +13,7 @@ class Definition {
   has Value $.value;
 
   method to-code {
-    "var kan_{$.name} = {$.value.to-code};";
+    "context.{$.name} = {$.value.to-code};";
   }
 }
 
@@ -67,8 +67,8 @@ class Function does Value {
   method to-code {
     'compose(' ~
       ($.subject ?? $.subject.to-code !! "null") ~ ', ' ~
-      "kan_$.name" ~ ', ' ~
-      $.parameters.to-code ~ ', ' ~
+      "\"$.name\"" ~ ', ' ~
+      $.parameters.to-code ~
     ')';
   }
 }

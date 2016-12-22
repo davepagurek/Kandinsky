@@ -49,7 +49,7 @@ grammar Kandinsky::Grammar {
   rule value:sym<array> { <array> }
 
   token number {
-    \d+ \.? \d*
+    '-'? \d+ \.? \d*
   }
 
 
