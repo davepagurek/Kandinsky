@@ -1,0 +1,16 @@
+#!/usr/bin/env perl6
+use v6;
+use lib 'lib';
+use Kandinsky;
+
+subset File of Str where *.IO.e;
+
+sub MAIN('build', File $source) {
+  my $program = Kandinsky.new.codegen($source.IO.slurp);
+  my $html = Kandinsky.new.page;
+  "{$source.IO.dirname}/drawing".IO.mkdir;
+  "{$source.IO.dirname}/drawing/js".IO.mkdir;
+  "{$source.IO.dirname}/drawing/index.html".IO.spurt($html);
+  "{$source.IO.dirname}/drawing/js/drawing.js".IO.spurt($program);
+  say "Generated program.";
+}

@@ -36,7 +36,7 @@ grammar Kandinsky::Grammar {
   }
 
   proto rule value {*}
-  rule value:sym<functional> {
+  rule value:sym<decorated> {
     <function> + % [ <compose> ]
   }
   rule value:sym<number> {
@@ -55,7 +55,7 @@ grammar Kandinsky::Grammar {
 
   # Strings
   token string {
-    \" [ <str> | \\ <str=.str-escape> ]* \"
+    \" [ <str-double> | \\ <str=.str-escape> ]* \"
   }
   token str-double {
     <-["\\\t\n]>+
