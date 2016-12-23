@@ -1,22 +1,30 @@
 define branch as
-  rectangle: {x: -4, y: -50, width: 8, height: 54}.
+  rectangle: {x: -2, y: -50, width: 4, height: 52}.
 
-define tree as
+define leaf as
+  circle: {radius: 15};
+  shifted: {up: 15}.
+
+define tree with max_depth: 5 as
   grouped: {drawings: repeated: {
-    times: 2,
-    each: given: {
-      that: lt: {lhs: random, rhs: 0.5},
-      then:
-        branch;
-        with: {drawing:
-          tree;
-          stretched: {x: 0.8, y: 0.75};
-          rotated: {angle: random: {from: -90, to: 90}};
-          shifted: {up: 50}
-        },
-      else: branch
-    }
+    times: 3,
+    each:
+      given: {
+        that: lt: {lhs: random, rhs: 0.5},
+        then:
+          branch;
+          with: {
+            drawing: tree; shifted: {up: 50}
+          };
+          stretched: {x: 0.8, y: 0.75}
+      };
+      rotated: {angle: random: {from: -50, to: 50}}
   }}.
 
-define result as tree;
+define result as
+  branch;
+  with: {drawing:
+    tree;
+    shifted: {up: 50}
+  };
   shifted: {down: 400, right: 400}.

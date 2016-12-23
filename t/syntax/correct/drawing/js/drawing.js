@@ -1,18 +1,39 @@
 var context = {};
 
-function apply(subject, fn, params) {
-  return fn(subject, params);
+function incrCalls(calls, name) {
+  calls = calls || {};
+  newCalls = {};
+  for (var key in calls) {
+    newCalls[key] = calls[key];
+  }
+  newCalls[name] = newCalls[name] || 0;
+  newCalls[name]++;
+  return newCalls;
+}
+
+function withMaxDepth(fn, name, max) {
+  return function(subject, params, calls) {
+    if (calls[name] > max) {
+      return null;
+    } else {
+      return apply(subject, fn, params, calls);
+    }
+  };
+}
+
+function apply(subject, fn, params, calls) {
+  return fn(subject, params, calls);
 }
 
 function compose(fn, decorator, params) {
   if (fn) {
-    return function(subject, nextParams) {
-      var result = fn(subject);
-      return apply(result, context[decorator], params);
+    return function(subject, nextParams, calls) {
+      var result = fn(subject, null, calls);
+      return apply(result, context[decorator], params, incrCalls(calls, decorator));
     };
   } else {
-    return function() {
-      return apply(null, context[decorator], params);
+    return function(_, _, calls) {
+      return apply(null, context[decorator], params, incrCalls(calls, decorator));
     };
   }
 }
@@ -21,10 +42,10 @@ function isFunction(obj) {
   return !!(obj && obj.constructor && obj.call && obj.apply);
 }
 
-function get(params, key, fallback) {
+function get(params, key, fallback, calls) {
   if (key in params) {
     if (isFunction(params[key])) {
-      return params[key]();
+      return params[key](null, null, calls);
     } else {
       return params[key];
     }
@@ -56,7 +77,7 @@ tag.prototype = {
     }
 
     this.children.forEach(function(child) {
-      elem.appendChild(child.render());
+      if (child) elem.appendChild(child.render());
     });
 
     return elem;
@@ -75,7 +96,6 @@ function render() {
 }
 
 window.addEventListener('load', function() {
-  console.log("starting");
   svg = document.getElementById('canvas');
   render();
 });
@@ -92,24 +112,24 @@ context.circle = function(subject, params) {
   }, []);
 };
 
-context.rectangle = function(subject, params) {
+context.rectangle = function(subject, params, calls) {
   return new tag('rect', {
-    x: get(params, 'x', 0),
-    y: get(params, 'y', 0),
-    width: get(params, 'width', 10),
-    height: get(params, 'height', 10)
+    x: get(params, 'x', 0, calls),
+    y: get(params, 'y', 0, calls),
+    width: get(params, 'width', 10, calls),
+    height: get(params, 'height', 10, calls)
   }, []);
 };
 
 
 // GROUPS
 
-context.grouped = function(subject, params) {
+context.grouped = function(subject, params, calls) {
   return new tag(
     'g', {},
-    get(params, 'drawings').map(function(drawing) {
+    get(params, 'drawings', [], calls).map(function(drawing) {
       if (isFunction(drawing)) {
-        return drawing();
+        return drawing(null, null, calls);
       } else {
         return drawing;
       }
@@ -119,40 +139,40 @@ context.grouped = function(subject, params) {
   );
 };
 
-context.with = function(subject, params) {
-  return context.grouped(null, {drawings: [subject, get(params, 'drawing')]});
+context.with = function(subject, params, calls) {
+  return context.grouped(null, {drawings: [subject, get(params, 'drawing', null, calls)]}, calls);
 };
 
 // TRANSFORMS
 
-context.stretched = function(subject, params) {
+context.stretched = function(subject, params, calls) {
   var transformString;
   if ('by' in params) {
-    transformString = 'scale(' + get(params, 'by') + ')';
+    transformString = 'scale(' + get(params, 'by', 1, calls) + ')';
   } else {
     transformString = 'scale(' +
-      get(params, 'x', 1) + ', ' +
-      get(params, 'y', get(params, 'x', 1)) + ')';
+      get(params, 'x', 1, calls) + ', ' +
+      get(params, 'y', get(params, 'x', 1, calls), calls) + ')';
   }
   return new tag('g', {
     transform: transformString
   }, [subject]);
 };
 
-context.shifted = function(subject, params) {
-  var x = get(params, 'right', -get(params, 'left', 0));
-  var y = get(params, 'down', -get(params, 'up', 0));
+context.shifted = function(subject, params, calls) {
+  var x = get(params, 'right', -get(params, 'left', 0, calls), calls);
+  var y = get(params, 'down', -get(params, 'up', 0, calls), calls);
   return new tag('g', {
     transform: 'translate(' + (x || 0) + ', ' + (y || 0) + ')'
   }, [subject]);
 };
 
-context.rotated = function(subject, params) {
+context.rotated = function(subject, params, calls) {
   return new tag('g', {
     transform: 'rotate(' +
-      get(params, 'angle', 0) + ', ' +
-      get(params, 'x', 0) + ', ' +
-      get(params, 'y', 0) +
+      get(params, 'angle', 0, calls) + ', ' +
+      get(params, 'x', 0, calls) + ', ' +
+      get(params, 'y', 0, calls) +
       ')'
   }, [subject]);
 }
@@ -163,40 +183,42 @@ context.identity = function(subject) {
   return subject;
 };
 
-context.given = function(subject, params) {
-  condition = get(params, 'that', false);
+context.given = function(subject, params, calls) {
+  condition = get(params, 'that', false, calls);
   if (condition) {
-    return apply(subject, getRef(params, 'then'), {});
+    return apply(subject, getRef(params, 'then'), {}, calls);
   } else {
-    return apply(subject, getRef(params, 'else'), {});
+    return apply(subject, getRef(params, 'else'), {}, calls);
   }
 };
 
-context.lt = function(_, params) {
-  lhs = get(params, 'lhs');
-  rhs = get(params, 'rhs');
+context.lt = function(_, params, calls) {
+  lhs = get(params, 'lhs', calls);
+  rhs = get(params, 'rhs', calls);
   return lhs < rhs;
 }
 
 // UTILS
 
-context.random = function(_, params) {
-  var high = get(params, 'to', 1);
-  var low = get(params, 'from', 0);
+context.random = function(_, params, calls) {
+  var high = get(params, 'to', 1, calls);
+  var low = get(params, 'from', 0, calls);
   return Math.random() * (high - low) + low;
 };
 
-context.repeated = function(_, params) {
-  var times = get(params, 'times', 1);
+context.repeated = function(_, params, calls) {
+  var times = get(params, 'times', 1, calls);
   return Array.apply(null, Array(times)).map(function() {
-    return get(params, 'each');
+    return get(params, 'each', null, calls);
   });
 };
 
 
 
-context.branch = compose(null, "rectangle", {"x": -4, "height": 54, "y": -50, "width": 8});
+context.branch = compose(null, "rectangle", {"x": -2, "height": 52, "y": -50, "width": 4});
 
-context.tree = compose(null, "grouped", {"drawings": compose(null, "repeated", {"each": compose(null, "given", {"then": compose(compose(null, "branch", {}), "with", {"drawing": compose(compose(compose(compose(null, "tree", {}), "stretched", {"x": 0.8, "y": 0.75}), "rotated", {"angle": compose(null, "random", {"to": 90, "from": -90})}), "shifted", {"up": 50})}), "that": compose(null, "lt", {"lhs": compose(null, "random", {}), "rhs": 0.5}), "else": compose(null, "branch", {})}), "times": 2})});
+context.leaf = compose(compose(null, "circle", {"radius": 15}), "shifted", {"up": 15});
 
-context.result = compose(compose(null, "tree", {}), "shifted", {"down": 400, "right": 400});
+context.tree = withMaxDepth(compose(null, "grouped", {"drawings": compose(null, "repeated", {"each": compose(compose(null, "given", {"then": compose(compose(compose(null, "branch", {}), "with", {"drawing": compose(compose(null, "tree", {}), "shifted", {"up": 50})}), "stretched", {"x": 0.8, "y": 0.75}), "that": compose(null, "lt", {"lhs": compose(null, "random", {}), "rhs": 0.5})}), "rotated", {"angle": compose(null, "random", {"to": 50, "from": -50})}), "times": 3})}), "tree", 5);
+
+context.result = compose(compose(compose(null, "branch", {}), "with", {"drawing": compose(compose(null, "tree", {}), "shifted", {"up": 50})}), "shifted", {"down": 400, "right": 400});

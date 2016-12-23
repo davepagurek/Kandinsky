@@ -10,7 +10,17 @@ grammar Kandinsky::Grammar {
   }
 
   rule definition {
-    "define" <identifier> "as" <value> <end-stmt>
+    "define" <identifier>
+    [ "with" <options> ]?
+    "as" <value> <end-stmt>
+  }
+
+  rule options {
+    <option> + % \,
+  }
+
+  rule option {
+    <identifier> ":" $<val>=[<string> | <number>]
   }
 
   rule function {

@@ -11,8 +11,18 @@ class Kandinsky::Actions {
   method definition($/) {
     make Kandinsky::Node::Definition.new(
       name => $<identifier>.made,
-      value => $<value>.made
+      value => $<value>.made,
+      options => $<options> ?? $<options>.made !! Hash.new
     )
+  }
+
+  method options($/) {
+    say $<option>.map(*.made).list.gist;
+    make Hash.new($<option>.map(*.made).list);
+  }
+
+  method option($/) {
+    make $<identifier>.made => ~$<val>;
   }
 
   method identifier($/) {
@@ -36,7 +46,7 @@ class Kandinsky::Actions {
     );
   }
 
-  method value:sym<dict> {
+  method value:sym<dict>($/) {
     make $<dict>.made;
   }
   method dict($/) {
