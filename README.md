@@ -1,6 +1,8 @@
 # Kandinsky
 A declarative language for programming generative art
 
+<img src="https://github.com/davepagurek/Kandinsky/blob/master/branch.png?raw=true" width="200" />
+
 ## Purpose
 Programming can contribute a lot to the art world by opening up possibilities for new types of creativity. Programmatically generated art can be responsive and interactive, and can use random generation to produce ever-changing works.
 
