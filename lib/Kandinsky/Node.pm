@@ -11,21 +11,9 @@ role Value {
 class Definition {
   has Str $.name;
   has Value $.value;
-  has %.options;
-
-  method wrapped-code {
-    reduce(-> $a, $b {
-      given $b.key {
-        when "max_depth" {
-          "withMaxDepth($a, \"{$.name}\", {$b.value.Num})";
-        }
-        default { $a; }
-      }
-    }, $.value.to-code, |(%.options.pairs));
-  }
 
   method to-code {
-    "context.{$.name} = {self.wrapped-code};";
+    "context.{$.name} = {$.value.to-code};";
   }
 }
 

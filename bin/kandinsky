@@ -6,8 +6,8 @@ use Kandinsky;
 subset File of Str where *.IO.e;
 
 sub MAIN('build', File $source) {
-  my $program = Kandinsky.new.codegen($source.IO.slurp);
-  my $html = Kandinsky.new.page;
+  my $program = Kandinsky.codegen($source.IO.slurp);
+  my $html = Kandinsky.page;
   "{$source.IO.dirname}/drawing".IO.mkdir;
   "{$source.IO.dirname}/drawing/js".IO.mkdir;
   "{$source.IO.dirname}/drawing/index.html".IO.spurt($html);

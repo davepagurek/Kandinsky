@@ -11,16 +11,7 @@ grammar Kandinsky::Grammar {
 
   rule definition {
     "define" <identifier>
-    [ "with" <options> ]?
     "as" <value> <end-stmt>
-  }
-
-  rule options {
-    <option> + % \,
-  }
-
-  rule option {
-    <identifier> ":" $<val>=[<string> | <number>]
   }
 
   rule function {
@@ -68,7 +59,7 @@ grammar Kandinsky::Grammar {
 
   # Strings
   token string {
-    \" [ <str-double> | \\ <str=.str-escape> ]* \"
+    \" [ <str=str-double> | \\ <str=.str-escape> ]* \"
   }
   token str-double {
     <-["\\\t\n]>+

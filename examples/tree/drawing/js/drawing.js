@@ -1,3 +1,95 @@
+var context = {};
+
+function incrCalls(calls, name) {
+  calls = calls || {};
+  newCalls = {};
+  for (var key in calls) {
+    newCalls[key] = calls[key];
+  }
+  newCalls[name] = newCalls[name] || 0;
+  newCalls[name]++;
+  return newCalls;
+}
+
+function apply(subject, fn, params, calls) {
+  return fn(subject, params, calls);
+}
+
+function compose(fn, decorator, params) {
+  if (fn) {
+    return function(subject, nextParams, calls) {
+      var composed = function() {
+        return fn(subject, null, calls);
+      };
+      return apply(composed, context[decorator], params, incrCalls(calls, decorator));
+    };
+  } else {
+    return function(_, _, calls) {
+      return apply(null, context[decorator], params, incrCalls(calls, decorator));
+    };
+  }
+}
+
+function isFunction(obj) {
+  return !!(obj && obj.constructor && obj.call && obj.apply);
+}
+
+function get(params, key, fallback, calls) {
+  if (key in params) {
+    return params[key];
+  } else {
+    return fallback || context.identity;
+  }
+}
+
+function materialize(variable, fallback, calls) {
+  if (isFunction(variable)) {
+    return variable(null, null, calls) || fallback;
+  } else {
+    return variable || fallback;
+  }
+}
+
+function tag(type, attrs, children) {
+  this.type = type;
+  this.attrs = attrs;
+  this.children = children;
+}
+tag.prototype = {
+  ns: 'http://www.w3.org/2000/svg',
+  render: function() {
+    var elem = document.createElementNS(this.ns, this.type);
+
+    for (var attr in this.attrs) {
+      elem.setAttributeNS(null, attr, this.attrs[attr]);
+    }
+
+    this.children.forEach(function(child) {
+      if (child) elem.appendChild(child.render());
+    });
+
+    return elem;
+  }
+}
+
+var svg;
+function render() {
+  while (svg.firstChild) {
+    svg.removeChild(svg.firstChild);
+  }
+
+  var drawing = context.result();
+  console.log(drawing);
+  svg.appendChild(drawing.render());
+}
+
+window.addEventListener('load', function() {
+  svg = document.getElementById('canvas');
+  render();
+});
+
+
+
 // PRIMITIVES
 
 context.circle = function(_, params, calls) {
@@ -129,3 +221,13 @@ context.depth_limited = function(subject, params, calls) {
     return materialize(subject, null, calls);
   }
 }
+
+
+
+context.branch = compose(null, "rectangle", {"x": -2, "height": 52, "y": -50, "width": 4});
+
+context.leaf = compose(compose(null, "circle", {"radius": compose(null, "random", {"to": 40, "from": 15}), "fill": "#F7BED9"}), "shifted", {"up": 15});
+
+context.tree = compose(compose(compose(null, "grouped", {"drawings": compose(null, "repeated", {"each": compose(compose(null, "given", {"then": compose(compose(compose(compose(null, "tree", {}), "shifted", {"up": 50}), "with", {"drawing": compose(null, "branch", {})}), "stretched", {"x": 0.8, "y": 0.75}), "that": compose(null, "lt", {"lhs": compose(null, "random", {}), "rhs": 0.5}), "else": compose(null, "given", {"then": compose(null, "leaf", {}), "that": compose(null, "lt", {"lhs": compose(null, "random", {}), "rhs": 0.4})})}), "rotated", {"angle": compose(null, "random", {"to": 50, "from": -50})}), "times": 3})}), "depth_limited", {"call": "tree", "max": 4}), "or", {"drawing": compose(null, "leaf", {})});
+
+context.result = compose(compose(compose(null, "branch", {}), "with", {"drawing": compose(compose(null, "tree", {}), "shifted", {"up": 50})}), "shifted", {"down": 400, "right": 400});

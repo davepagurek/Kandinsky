@@ -5,7 +5,7 @@ use Kandinsky::Actions;
 use Kandinsky::Node;
 
 class Kandinsky {
-  method codegen(Str $input --> Str) is export {
+  submethod codegen(Str $input --> Str) is export {
     my $match = Kandinsky::Grammar.subparse($input, actions => Kandinsky::Actions.new);
     if $match {
       if $match.to != $input.chars {
@@ -22,7 +22,7 @@ class Kandinsky {
     }
   }
 
-  method page(--> Str) is export {
+  submethod page(--> Str) is export {
     "{$?FILE.IO.dirname}/html/index.html".IO.slurp;
   }
 }

@@ -12,17 +12,7 @@ class Kandinsky::Actions {
     make Kandinsky::Node::Definition.new(
       name => $<identifier>.made,
       value => $<value>.made,
-      options => $<options> ?? $<options>.made !! Hash.new
     )
-  }
-
-  method options($/) {
-    say $<option>.map(*.made).list.gist;
-    make Hash.new($<option>.map(*.made).list);
-  }
-
-  method option($/) {
-    make $<identifier>.made => ~$<val>;
   }
 
   method identifier($/) {
@@ -88,7 +78,7 @@ class Kandinsky::Actions {
     make $<string>.made;
   }
   method string($/) {
-    make Kandinsky::Node::String.new(content => $/.str.map(*.made).join(""));
+    make Kandinsky::Node::String.new(content => $<str>.map(*.made).join(""));
   }
 
   method str-double($/) {
