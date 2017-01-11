@@ -3,6 +3,8 @@ A declarative language for programming generative art
 
 <img src="https://github.com/davepagurek/Kandinsky/blob/master/branch.png?raw=true" width="200" />
 
+Tree example: http://codepen.io/davepvm/pen/MJKGyL
+
 ## Purpose
 Programming can contribute a lot to the art world by opening up possibilities for new types of creativity. Programmatically generated art can be responsive and interactive, and can use random generation to produce ever-changing works.
 
@@ -18,3 +20,9 @@ Kandinsky will eventually have a GUI editor where one can use traditional vector
 To start with, Kandinsky will be a written language, implemented in Perl 6, compiled to Javascript so that is can be displayed on the web and react to input events. 
 
 Eventually, the compilation step should be moved to a compiled language (e.g. C) for integration with other libraries and possible runtime integration with OpenGL and existing vector graphics editing libraries. A GUI can then be added onto that.
+
+## Usage
+```
+bin/kandinsky build test.kan
+open drawing/index.html
+```
